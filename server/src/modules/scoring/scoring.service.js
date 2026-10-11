@@ -14,26 +14,10 @@ import { getPreEventSignals } from '../registrations/registration.service.js';
 import { NotFoundError } from '../../utils/errors.js';
 
 /**
- * Computes Event Quality, Fit for You (if student provided), and Pre-Event Signals
- * for a specific event edition, maintaining strict separation between Quality and Fit.
+ * Gathers the review/history evidence used for Event Quality for one edition.
+ * Shared by single-edition scoring and batch summaries for lists/compare.
  */
-export async function getScoredEventEdition(editionId, currentStudentUser = null) {
-  const edition = await EventEdition.findById(editionId)
-    .populate({
-      path: 'eventId',
-      populate: { path: 'organizerId' },
-    })
-    .populate('collegeId')
-    .populate('allowedCollegeIds');
-
-  if (!edition) {
-    throw new NotFoundError('Event edition not found');
-  }
-
-  const eventSeries = edition.eventId;
-  const organizer = eventSeries?.organizerId;
-
-  // 1. Gather Evidence for Event Quality
+export async function gatherQualityEvidence(edition, eventSeries, organizer) {
   // A. Current eligible reviews for this edition
   const currentReviews = await Review.find({
     eventEditionId: edition._id,
@@ -99,6 +83,68 @@ export async function getScoredEventEdition(editionId, currentStudentUser = null
       }
     }
   }
+
+  return { currentReviews, pastEditionsData, organizerHistoryData };
+}
+
+/**
+ * Computes Event Quality and Fit for You for many editions without pre-event
+ * signals. Used by event list and compare endpoints. Fit stays null when no
+ * authenticated student is provided (privacy invariant: no anonymous fit).
+ */
+export async function scoreEditionSummaries(editions, currentStudentUser = null) {
+  const summaries = await Promise.all(
+    editions.map(async (edition) => {
+      const eventSeries = edition.eventId;
+      const organizer = eventSeries?.organizerId;
+
+      const { currentReviews, pastEditionsData, organizerHistoryData } =
+        await gatherQualityEvidence(edition, eventSeries, organizer);
+
+      const eventQuality = calculateEventQuality({
+        reviews: currentReviews,
+        pastEditions: pastEditionsData,
+        organizerHistory: organizerHistoryData,
+      });
+
+      let fitForYou = null;
+      if (currentStudentUser) {
+        fitForYou = calculateFitForYou({
+          student: currentStudentUser,
+          event: eventSeries,
+          edition,
+        });
+      }
+
+      return { eventQuality, fitForYou };
+    })
+  );
+
+  return summaries;
+}
+
+/**
+ * Computes Event Quality, Fit for You (if student provided), and Pre-Event Signals
+ * for a specific event edition, maintaining strict separation between Quality and Fit.
+ */
+export async function getScoredEventEdition(editionId, currentStudentUser = null) {
+  const edition = await EventEdition.findById(editionId)
+    .populate({
+      path: 'eventId',
+      populate: { path: 'organizerId' },
+    })
+    .populate('collegeId')
+    .populate('allowedCollegeIds');
+
+  if (!edition) {
+    throw new NotFoundError('Event edition not found');
+  }
+
+  const eventSeries = edition.eventId;
+  const organizer = eventSeries?.organizerId;
+
+  const { currentReviews, pastEditionsData, organizerHistoryData } =
+    await gatherQualityEvidence(edition, eventSeries, organizer);
 
   // Calculate Event Quality via Pure Function
   const eventQuality = calculateEventQuality({

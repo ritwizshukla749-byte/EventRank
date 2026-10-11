@@ -8,7 +8,7 @@ import { successResponse } from '../../utils/response.js';
 
 export async function getEvents(req, res, next) {
   try {
-    const result = await listPublishedEvents(req.query);
+    const result = await listPublishedEvents(req.query, req.user || null);
     return successResponse(res, { events: result.events }, result.meta);
   } catch (err) {
     next(err);
@@ -36,7 +36,7 @@ export async function createEvent(req, res, next) {
 
 export async function compare(req, res, next) {
   try {
-    const result = await compareEvents(req.body.editionIds);
+    const result = await compareEvents(req.body.editionIds, req.user || null);
     return successResponse(res, result);
   } catch (err) {
     next(err);

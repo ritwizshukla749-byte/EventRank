@@ -1,7 +1,8 @@
 import { Event, EventEdition, College, Organizer, Registration } from '../../models/index.js';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../utils/errors.js';
+import { scoreEditionSummaries } from '../scoring/scoring.service.js';
 
-export async function listPublishedEvents(query) {
+export async function listPublishedEvents(query = {}, currentUser = null) {
   const {
     q,
     collegeId,
@@ -12,6 +13,7 @@ export async function listPublishedEvents(query) {
     minCost,
     maxCost,
     sort = 'upcoming',
+    includeScores = false,
     page = 1,
     limit = 10,
   } = query;
@@ -53,7 +55,58 @@ export async function listPublishedEvents(query) {
     editionFilter.eventId = { $in: eventIds };
   }
 
-  // Sorting logic
+  const editionPopulation = [
+    {
+      path: 'eventId',
+      select: 'title description eventType tags prerequisites expectedOutcomes organizerId',
+      populate: {
+        path: 'organizerId',
+        select: 'name type description collegeId',
+      },
+    },
+    { path: 'collegeId', select: 'name slug city region status' },
+  ];
+
+  const needsScoring = includeScores || sort === 'quality' || sort === 'fit';
+
+  if (needsScoring) {
+    // Scoring requires the full matching set before pagination and sorting
+    const editions = await EventEdition.find(editionFilter)
+      .sort({ startAt: 1 })
+      .populate(editionPopulation)
+      .lean();
+
+    const items = await formatEventListItems(editions);
+    const summaries = await scoreEditionSummaries(editions, currentUser);
+
+    items.forEach((item, i) => {
+      item.quality = summaries[i].eventQuality;
+      item.fit = summaries[i].fitForYou;
+    });
+
+    if (sort === 'quality') {
+      items.sort(scoreComparator('quality'));
+    } else if (sort === 'fit') {
+      items.sort(scoreComparator('fit'));
+    }
+
+    const total = items.length;
+    const effectivePage = Math.min(page, Math.max(1, Math.ceil(total / limit) || 1));
+    const start = (effectivePage - 1) * limit;
+    const pageItems = items.slice(start, start + limit);
+
+    return {
+      events: pageItems,
+      meta: {
+        total,
+        page: effectivePage,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
+
+  // Standard sorting for non-scored queries
   let sortOption = { startAt: 1 };
   if (sort === 'cost_asc') sortOption = { costAmount: 1, startAt: 1 };
   if (sort === 'cost_desc') sortOption = { costAmount: -1, startAt: 1 };
@@ -67,20 +120,42 @@ export async function listPublishedEvents(query) {
       .sort(sortOption)
       .skip(skip)
       .limit(limit)
-      .populate({
-        path: 'eventId',
-        select: 'title description eventType tags prerequisites expectedOutcomes organizerId',
-        populate: {
-          path: 'organizerId',
-          select: 'name type description collegeId',
-        },
-      })
-      .populate('collegeId', 'name slug city region status'),
+      .populate(editionPopulation),
     EventEdition.countDocuments(editionFilter),
   ]);
 
-  // Aggregate registration counts for these editions
+  const items = await formatEventListItems(editions);
+  const computedTotal = total || items.length;
+
+  return {
+    events: items,
+    meta: {
+      total: computedTotal,
+      page,
+      limit,
+      totalPages: Math.ceil(computedTotal / limit) || 1,
+    },
+  };
+}
+
+/**
+ * Stable descending sort by a score key with null scores last, then date.
+ */
+function scoreComparator(key) {
+  return (a, b) => {
+    const scoreA = a[key]?.score ?? -1;
+    const scoreB = b[key]?.score ?? -1;
+    if (scoreA === scoreB) {
+      return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+    }
+    return scoreB - scoreA;
+  };
+}
+
+async function formatEventListItems(editions) {
   const editionIds = editions.map((e) => e._id);
+
+  // Aggregate registration counts for these editions (interest signal, never quality)
   const regCounts = await Registration.aggregate([
     { $match: { eventEditionId: { $in: editionIds }, status: 'registered' } },
     { $group: { _id: '$eventEditionId', count: { $sum: 1 } } },
@@ -127,15 +202,7 @@ export async function listPublishedEvents(query) {
     };
   });
 
-  return {
-    events: formattedEvents,
-    meta: {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit) || 1,
-    },
-  };
+  return formattedEvents;
 }
 
 export async function getEventEditionDetails(editionId, currentUserId = null) {
@@ -273,7 +340,7 @@ export async function createEventAndEdition(user, payload) {
   return { event: baseEvent, edition };
 }
 
-export async function compareEvents(editionIds) {
+export async function compareEvents(editionIds, currentUser = null) {
   if (!Array.isArray(editionIds) || editionIds.length === 0 || editionIds.length > 3) {
     throw new ValidationError('You can compare between 1 and 3 events');
   }
@@ -292,8 +359,11 @@ export async function compareEvents(editionIds) {
   ]);
   const countMap = new Map(regCounts.map((r) => [r._id.toString(), r.count]));
 
+  // Batch scoring so comparison rows show separated Quality and Fit signals
+  const summaries = await scoreEditionSummaries(editions, currentUser);
+
   // Return normalized comparison matrix rows
-  const comparison = editions.map((ed) => ({
+  const comparison = editions.map((ed, i) => ({
     _id: ed._id,
     title: ed.eventId?.title || 'Unknown Event',
     hostCollege: ed.collegeId?.name || 'Unknown Institution',
@@ -307,6 +377,8 @@ export async function compareEvents(editionIds) {
     tags: ed.eventId?.tags || [],
     expectedOutcomes: ed.eventId?.expectedOutcomes || [],
     organizer: ed.eventId?.organizerId?.name || 'Unknown Organizer',
+    quality: summaries[i].eventQuality,
+    fit: summaries[i].fitForYou,
   }));
 
   return { comparison };

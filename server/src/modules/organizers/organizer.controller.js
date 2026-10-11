@@ -1,6 +1,7 @@
 import {
   listOrganizers,
   getOrganizerProfileAndHistory,
+  getOrganizerForUser,
   updateOrganizerProfile,
 } from './organizer.service.js';
 import { successResponse } from '../../utils/response.js';
@@ -8,6 +9,15 @@ import { successResponse } from '../../utils/response.js';
 export async function getOrganizers(req, res, next) {
   try {
     const result = await listOrganizers(req.query);
+    return successResponse(res, result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMyOrganizer(req, res, next) {
+  try {
+    const result = await getOrganizerForUser(req.user);
     return successResponse(res, result);
   } catch (err) {
     next(err);

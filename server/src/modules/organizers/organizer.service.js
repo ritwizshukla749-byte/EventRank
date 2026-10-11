@@ -57,6 +57,42 @@ export async function getOrganizerProfileAndHistory(organizerId) {
   };
 }
 
+export async function getOrganizerForUser(user) {
+  if (user.globalRole === 'platform_admin') {
+    throw new NotFoundError(
+      'Platform administrators are not bound to a specific organizer'
+    );
+  }
+
+  const memberOrganizer = await Organizer.findOne({
+    authorizedUserIds: user._id,
+    status: 'approved',
+  }).populate('collegeId', 'name slug city');
+
+  if (memberOrganizer) {
+    return { organizer: toOrganizerView(memberOrganizer) };
+  }
+
+  // College admins may act on behalf of any approved organizer at their college
+  if (user.collegeRole === 'college_admin' && user.collegeId) {
+    const collegeOrganizer = await Organizer.findOne({
+      collegeId: user.collegeId,
+      status: 'approved',
+    }).populate('collegeId', 'name slug city');
+
+    if (collegeOrganizer) {
+      return { organizer: toOrganizerView(collegeOrganizer) };
+    }
+  }
+
+  throw new NotFoundError('No organizer profile is associated with your account');
+}
+
+function toOrganizerView(organizer) {
+  const { collegeId, ...organizerView } = organizer.toObject();
+  return { ...organizerView, hostCollege: collegeId };
+}
+
 export async function updateOrganizerProfile(organizerId, user, payload) {
   const organizer = await Organizer.findById(organizerId);
   if (!organizer) {

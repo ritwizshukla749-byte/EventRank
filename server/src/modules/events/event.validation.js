@@ -9,7 +9,13 @@ export const listEventsQuerySchema = z.object({
   to: z.string().datetime({ offset: true }).optional().or(z.string().regex(/^\d{4}-\d{2}-\d{2}/).optional()),
   minCost: z.coerce.number().min(0).optional(),
   maxCost: z.coerce.number().min(0).optional(),
-  sort: z.enum(['upcoming', 'cost_asc', 'cost_desc', 'date_desc']).default('upcoming'),
+  sort: z
+    .enum(['upcoming', 'cost_asc', 'cost_desc', 'date_desc', 'quality', 'fit'])
+    .default('upcoming'),
+  includeScores: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });

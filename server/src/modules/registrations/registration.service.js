@@ -6,6 +6,7 @@ import {
   Organizer,
   Review,
   User,
+  AttendanceVerification,
 } from '../../models/index.js';
 import {
   NotFoundError,
@@ -129,6 +130,77 @@ export async function getRegistrationStatus(user, editionId) {
     registeredAt: registration?.registeredAt || null,
     totalRegistrations,
   };
+}
+
+export async function listForUser(userId) {
+  const registrations = await Registration.find({ userId })
+    .sort({ registeredAt: -1 })
+    .populate({
+      path: 'eventEditionId',
+      populate: [
+        { path: 'eventId', select: 'title eventType tags' },
+        { path: 'collegeId', select: 'name slug city' },
+      ],
+    });
+
+  const editionIds = registrations
+    .map((r) => r.eventEditionId?._id)
+    .filter(Boolean);
+
+  const verifiedAttendance = await AttendanceVerification.find({
+    userId,
+    eventEditionId: { $in: editionIds },
+    status: 'verified',
+  }).select('eventEditionId');
+  const verifiedEditionIds = new Set(
+    verifiedAttendance.map((v) => v.eventEditionId.toString())
+  );
+
+  const rows = registrations.map((registration) => {
+    const edition = registration.eventEditionId || null;
+    const eventSeries = edition?.eventId || null;
+    const hostCollege = edition?.collegeId || null;
+
+    return {
+      _id: registration._id,
+      eventEditionId: edition?._id || null,
+      status: registration.status,
+      registeredAt: registration.registeredAt,
+      cancelledAt: registration.cancelledAt || null,
+      hasAttendance: verifiedEditionIds.has(edition?._id?.toString()),
+      edition: edition
+        ? {
+            _id: edition._id,
+            editionLabel: edition.editionLabel,
+            startAt: edition.startAt,
+            endAt: edition.endAt,
+            venue: edition.venue,
+            costAmount: edition.costAmount,
+            currency: edition.currency,
+            eligibility: edition.eligibility,
+            status: edition.status,
+          }
+        : null,
+      event: eventSeries
+        ? {
+            _id: eventSeries._id,
+            title: eventSeries.title,
+            eventType: eventSeries.eventType,
+            tags: eventSeries.tags || [],
+          }
+        : null,
+      hostCollege: hostCollege
+        ? {
+            _id: hostCollege._id,
+            name: hostCollege.name,
+            slug: hostCollege.slug,
+            city: hostCollege.city,
+          }
+        : null,
+    };
+  });
+
+  return { registrations: rows };
 }
 
 export async function getPreEventSignals(editionId, currentUser = null) {
