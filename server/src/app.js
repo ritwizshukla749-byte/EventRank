@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { config } from './config/env.js';
 import healthRoutes from './routes/health.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
+import userRoutes from './modules/users/user.routes.js';
 import collegeRoutes from './modules/colleges/college.routes.js';
 import eventRoutes from './modules/events/event.routes.js';
 import organizerRoutes from './modules/organizers/organizer.routes.js';
@@ -15,6 +16,7 @@ import scoringRoutes from './modules/scoring/scoring.routes.js';
 import { compare } from './modules/events/event.controller.js';
 import { validateRequest } from './middleware/validate.js';
 import { compareEventsSchema } from './modules/events/event.validation.js';
+import { optionalAuthenticate } from './middleware/auth.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 export function createApp() {
@@ -40,6 +42,7 @@ export function createApp() {
   const apiRouter = express.Router();
   apiRouter.use(healthRoutes);
   apiRouter.use('/auth', authRoutes);
+  apiRouter.use('/users', userRoutes);
   apiRouter.use('/colleges', collegeRoutes);
   apiRouter.use('/events', eventRoutes);
   apiRouter.use('/organizers', organizerRoutes);
@@ -48,7 +51,7 @@ export function createApp() {
   apiRouter.use('/event-editions', reviewEditionRoutes);
   apiRouter.use('/reviews', reviewRoutes);
   apiRouter.use('/scoring', scoringRoutes);
-  apiRouter.post('/compare', validateRequest({ body: compareEventsSchema }), compare);
+  apiRouter.post('/compare', optionalAuthenticate, validateRequest({ body: compareEventsSchema }), compare);
 
   // Mount API router
   app.use('/api/v1', apiRouter);
