@@ -35,6 +35,15 @@ export async function apiClient(endpoint, options = {}) {
     throw new ApiError(error.code, error.message, error.details, response.status);
   }
 
+  // If the response follows the standard { data, meta } envelope, unwrap data while attaching meta
+  if (data && typeof data === 'object' && 'data' in data) {
+    const unwrapped = data.data;
+    if (unwrapped && typeof unwrapped === 'object' && !Array.isArray(unwrapped) && data.meta) {
+      unwrapped._meta = data.meta;
+    }
+    return unwrapped;
+  }
+
   return data;
 }
 

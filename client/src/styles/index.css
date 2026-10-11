@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* ==========================================================================
    EventRank Design System & Core Styles
    Modern, high-contrast, multi-college event discovery aesthetic
@@ -61,8 +63,6 @@
 
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
