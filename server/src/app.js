@@ -4,6 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config } from './config/env.js';
 import healthRoutes from './routes/health.routes.js';
+import authRoutes from './modules/auth/auth.routes.js';
+import collegeRoutes from './modules/colleges/college.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 export function createApp() {
@@ -28,6 +30,8 @@ export function createApp() {
   // API v1 routes
   const apiRouter = express.Router();
   apiRouter.use(healthRoutes);
+  apiRouter.use('/auth', authRoutes);
+  apiRouter.use('/colleges', collegeRoutes);
 
   // Mount API router
   app.use('/api/v1', apiRouter);

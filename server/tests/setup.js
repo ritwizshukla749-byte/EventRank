@@ -2,12 +2,15 @@ import { beforeAll, afterAll, beforeEach } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
+import '../src/models/index.js';
+
 let mongod;
 
 beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
   const uri = mongod.getUri();
   await mongoose.connect(uri);
+  await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
 });
 
 afterAll(async () => {
