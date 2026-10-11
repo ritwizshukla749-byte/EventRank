@@ -1,0 +1,43 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
+export class ApiError extends Error {
+  constructor(code, message, details = [], status = 500) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.details = details;
+    this.status = status;
+  }
+}
+
+export async function apiClient(endpoint, options = {}) {
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+  };
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+    credentials: 'include',
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const error = data?.error || {
+      code: 'HTTP_ERROR',
+      message: response.statusText || 'Request failed',
+      details: [],
+    };
+    throw new ApiError(error.code, error.message, error.details, response.status);
+  }
+
+  return data;
+}
+
+export const api = {
+  getHealth: () => apiClient('/health'),
+};
