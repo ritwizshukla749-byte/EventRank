@@ -17,8 +17,36 @@ export async function seedDatabase({ silent = false } = {}) {
 
   log('🌱 Starting idempotent multi-college database seeding...');
 
-  // 1. Seed 3 Fictional Participating Colleges
+  // 1. Seed 3 Participating Colleges
   const collegesData = [
+    {
+      name: 'Cascade Polytechnic',
+      slug: 'cascade-poly',
+      status: 'active',
+      city: 'Seattle',
+      region: 'WA',
+      website: 'https://cascade.edu',
+      allowedEmailDomains: ['cascade.edu'],
+    },
+    {
+      name: 'Northbridge University',
+      slug: 'northbridge-univ',
+      status: 'active',
+      city: 'Bellevue',
+      region: 'WA',
+      website: 'https://northbridge.edu',
+      allowedEmailDomains: ['northbridge.edu'],
+    },
+    {
+      name: 'St. Jude College of Art & Design',
+      slug: 'st-jude-art',
+      status: 'active',
+      city: 'Portland',
+      region: 'OR',
+      website: 'https://stjude.edu',
+      allowedEmailDomains: ['stjude.edu'],
+    },
+    // Backwards-compatible legacy slugs
     {
       name: 'Apex Institute of Technology',
       slug: 'apex-tech',
@@ -59,124 +87,167 @@ export async function seedDatabase({ silent = false } = {}) {
   }
   log(`✓ Seeded ${Object.keys(colleges).length} participating colleges.`);
 
-  // 2. Seed Users (Platform Admin, College Admins, Organizers, Students)
-  const defaultPasswordHash = await User.hashPassword('password123');
-
+  // 2. Seed Users
   const usersData = [
     {
-      name: 'Platform Administrator',
-      email: 'platform.admin@eventrank.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'platform_admin',
-      collegeRole: 'student',
-      status: 'active',
+      name: 'Alex Rivera',
+      email: 'alex.rivera@cascade.edu',
+      password: 'Password123!',
+      collegeId: colleges['cascade-poly']._id,
+      role: 'student',
+      profile: {
+        academicYear: 2,
+        department: 'Computer Science & AI',
+        skills: ['Python', 'ROS2', 'PyTorch', 'React', 'Embedded C++'],
+        interests: ['Robotics', 'Artificial Intelligence', 'Autonomous Systems', 'Hackathons'],
+        experienceLevel: 'intermediate',
+        budget: 50,
+      },
     },
     {
-      name: 'Apex College Admin',
-      email: 'admin@apex.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'college_admin',
-      collegeId: colleges['apex-tech']._id,
-      department: 'Administration',
-      status: 'active',
+      name: 'Cascade ACM Officer',
+      email: 'acm@cascade.edu',
+      password: 'Password123!',
+      collegeId: colleges['cascade-poly']._id,
+      role: 'organizer',
     },
     {
-      name: 'Metro College Admin',
-      email: 'admin@metro.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'college_admin',
-      collegeId: colleges['metro-state']._id,
-      department: 'Administration',
-      status: 'active',
+      name: 'Northbridge Venture Lead',
+      email: 'venture@northbridge.edu',
+      password: 'Password123!',
+      collegeId: colleges['northbridge-univ']._id,
+      role: 'organizer',
     },
     {
-      name: 'Apex Organizer Lead',
-      email: 'organizer@apex.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'organizer',
-      collegeId: colleges['apex-tech']._id,
-      department: 'Computer Science',
-      status: 'active',
+      name: 'St. Jude Design Guild Admin',
+      email: 'design@stjude.edu',
+      password: 'Password123!',
+      collegeId: colleges['st-jude-art']._id,
+      role: 'organizer',
     },
     {
-      name: 'Metro Organizer Lead',
-      email: 'organizer@metro.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'organizer',
-      collegeId: colleges['metro-state']._id,
-      department: 'Information Technology',
-      status: 'active',
+      name: 'St. Jude College Admin',
+      email: 'admin@stjude.edu',
+      password: 'Password123!',
+      collegeId: colleges['st-jude-art']._id,
+      role: 'college_admin',
     },
+    // Legacy test users
     {
-      name: 'Alex Rivera (Apex Student)',
+      name: 'Student Apex',
       email: 'student.apex@eventrank.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'student',
+      password: 'Password123!',
       collegeId: colleges['apex-tech']._id,
-      department: 'Computer Science',
-      academicYear: 3,
-      interests: ['AI', 'Web Development', 'Hackathons', 'Cloud'],
-      skills: ['JavaScript', 'React', 'Python', 'Node.js'],
-      experienceLevel: 'intermediate',
-      preferredEventTypes: ['hackathon', 'workshop'],
-      budgetMax: 500,
-      privacyPreferences: { showInPeerCounts: true },
-      status: 'active',
+      role: 'student',
     },
     {
-      name: 'Samira Khan (Metro Student)',
+      name: 'Organizer Apex',
+      email: 'organizer@apex.test',
+      password: 'Password123!',
+      collegeId: colleges['apex-tech']._id,
+      role: 'organizer',
+    },
+    {
+      name: 'Admin Apex',
+      email: 'admin@apex.test',
+      password: 'Password123!',
+      collegeId: colleges['apex-tech']._id,
+      role: 'college_admin',
+    },
+    {
+      name: 'Student Metro',
       email: 'student.metro@eventrank.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'student',
+      password: 'Password123!',
       collegeId: colleges['metro-state']._id,
-      department: 'Data Science',
-      academicYear: 2,
-      interests: ['Machine Learning', 'Data Science', 'Python', 'Competitive Coding'],
-      skills: ['Python', 'SQL', 'Data Analytics'],
-      experienceLevel: 'beginner',
-      preferredEventTypes: ['workshop', 'talk', 'competition'],
-      budgetMax: 300,
-      privacyPreferences: { showInPeerCounts: true },
-      status: 'active',
+      role: 'student',
     },
     {
-      name: 'Rohan Sharma (Cascade Student)',
+      name: 'Organizer Metro',
+      email: 'organizer@metro.test',
+      password: 'Password123!',
+      collegeId: colleges['metro-state']._id,
+      role: 'organizer',
+    },
+    {
+      name: 'Student Cascade',
       email: 'student.cascade@eventrank.test',
-      passwordHash: defaultPasswordHash,
-      globalRole: 'user',
-      collegeRole: 'student',
+      password: 'Password123!',
       collegeId: colleges['cascade-eng']._id,
-      department: 'Electronics',
-      academicYear: 4,
-      interests: ['IoT', 'Robotics', 'Hardware', 'Hackathons'],
-      skills: ['C++', 'Embedded Systems', 'IoT'],
-      experienceLevel: 'advanced',
-      preferredEventTypes: ['hackathon', 'competition'],
-      budgetMax: 1000,
-      privacyPreferences: { showInPeerCounts: true },
-      status: 'active',
+      role: 'student',
+    },
+    {
+      name: 'Platform Admin',
+      email: 'superadmin@eventrank.test',
+      password: 'Password123!',
+      role: 'platform_admin',
     },
   ];
 
   const users = {};
   for (const item of usersData) {
+    const passwordHash = await User.hashPassword(item.password);
+    const { password, role, ...dataToSave } = item;
+    dataToSave.passwordHash = passwordHash;
+
+    // Map the fixture "role" onto the real User schema fields (collegeRole/globalRole)
+    if (role === 'platform_admin') {
+      dataToSave.globalRole = 'platform_admin';
+    } else {
+      dataToSave.collegeRole = role || 'student';
+    }
+
     const user = await User.findOneAndUpdate(
       { email: item.email },
-      { $set: item },
+      { $set: dataToSave },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
     users[item.email] = user;
   }
   log(`✓ Seeded ${Object.keys(users).length} users across roles and colleges.`);
 
-  // 3. Seed Organizers (Note: Similarly named "Coding Club" in two distinct colleges to test non-merging)
+  // 3. Seed Organizers
   const organizersData = [
+    {
+      name: 'Cascade ACM Chapter',
+      type: 'club',
+      description: 'Official collegiate ACM chapter at Cascade Polytechnic.',
+      collegeId: colleges['cascade-poly']._id,
+      authorizedUserIds: [users['acm@cascade.edu']._id],
+      status: 'approved',
+    },
+    {
+      name: 'Robotics & Embedded Systems Lab',
+      type: 'lab',
+      description: 'Autonomous robotics and micro-aerial vehicle research community.',
+      collegeId: colleges['cascade-poly']._id,
+      authorizedUserIds: [users['acm@cascade.edu']._id],
+      status: 'approved',
+    },
+    {
+      name: 'Northbridge Venture Collective',
+      type: 'guild',
+      description: 'Inter-campus student venture and founder ecosystem.',
+      collegeId: colleges['northbridge-univ']._id,
+      authorizedUserIds: [users['venture@northbridge.edu']._id],
+      status: 'approved',
+    },
+    {
+      name: 'St. Jude Interactive Design Guild',
+      type: 'guild',
+      description: 'Human-computer interaction and generative design studio.',
+      collegeId: colleges['st-jude-art']._id,
+      authorizedUserIds: [users['design@stjude.edu']._id],
+      status: 'approved',
+    },
+    {
+      name: 'Inter-Collegiate Indie Game Collective',
+      type: 'collective',
+      description: 'Multi-campus game jam and experimental engine group.',
+      collegeId: colleges['cascade-poly']._id,
+      authorizedUserIds: [users['acm@cascade.edu']._id],
+      status: 'approved',
+    },
+    // Legacy organizers
     {
       name: 'Coding Club',
       type: 'club',
@@ -186,7 +257,7 @@ export async function seedDatabase({ silent = false } = {}) {
       status: 'approved',
     },
     {
-      name: 'Coding Club', // Same name, different college!
+      name: 'Coding Club',
       type: 'club',
       description: 'Student software and competitive programming guild at Metro State University.',
       collegeId: colleges['metro-state']._id,
@@ -214,8 +285,81 @@ export async function seedDatabase({ silent = false } = {}) {
   }
   log(`✓ Seeded ${Object.keys(organizers).length} organizers with institution-scoped isolation.`);
 
-  // 4. Seed Events (Series)
+  // 4. Seed Rich Event Series matching UI design
   const eventsData = [
+    {
+      title: 'Cascade HackFest 2026',
+      description: 'The Pacific Northwest’s flagship 36-hour collegiate hackathon bringing together 400+ developers, designers, and student founders.',
+      organizerId: organizers[`Cascade ACM Chapter_${colleges['cascade-poly']._id}`]._id,
+      collegeId: colleges['cascade-poly']._id,
+      eventType: 'hackathon',
+      tags: ['hackathon', 'ai', 'cloud', 'startups', 'free-food'],
+      prerequisites: ['Open to all majors'],
+      expectedOutcomes: ['Ship working MVP', '$250 AWS Cloud Credits', 'Network with Tier-1 recruiters'],
+      createdBy: users['acm@cascade.edu']._id,
+      status: 'active',
+    },
+    {
+      title: 'Autonomous Drone Systems & ROS2 Hands-On',
+      description: 'Hands-on hardware lab building flight controllers and state estimators using Robot Operating System (ROS2) on quadrotor hardware.',
+      organizerId: organizers[`Robotics & Embedded Systems Lab_${colleges['cascade-poly']._id}`]._id,
+      collegeId: colleges['cascade-poly']._id,
+      eventType: 'workshop',
+      tags: ['robotics', 'ros2', 'embedded', 'hardware', 'cert-provided'],
+      prerequisites: ['C++ or Python basics'],
+      expectedOutcomes: ['Hardware Flight Kit Provided', 'Lab Bench Certificate'],
+      createdBy: users['acm@cascade.edu']._id,
+      status: 'active',
+    },
+    {
+      title: 'Decentralized Autonomous Computing Symposium',
+      description: 'A deep-dive technical symposium exploring consensus algorithms, zero-knowledge proofs, and decentralized compute nodes.',
+      organizerId: organizers[`Cascade ACM Chapter_${colleges['cascade-poly']._id}`]._id,
+      collegeId: colleges['cascade-poly']._id,
+      eventType: 'conference',
+      tags: ['systems', 'cryptography', 'distributed-systems', 'free-food'],
+      prerequisites: ['Data Structures'],
+      expectedOutcomes: ['Free Lunch Buffet', 'Preprint Research Bound Copies'],
+      createdBy: users['acm@cascade.edu']._id,
+      status: 'active',
+    },
+    {
+      title: 'Generative AI Workflows for Product Designers',
+      description: 'A completed intensive examining prompt workflows, latent diffusion for rapid moodboards, and ethical provenance for UI/UX teams.',
+      organizerId: organizers[`St. Jude Interactive Design Guild_${colleges['st-jude-art']._id}`]._id,
+      collegeId: colleges['st-jude-art']._id,
+      eventType: 'workshop',
+      tags: ['ui-ux', 'design', 'generative-ai', 'figma'],
+      prerequisites: ['Figma familiarity'],
+      expectedOutcomes: ['Diffusion Studio Credits', 'Design Token Starter Pack'],
+      createdBy: users['design@stjude.edu']._id,
+      status: 'active',
+    },
+    {
+      title: 'Zero-G: Experimental 48-Hour Mechanic Jam',
+      description: 'Build an original single-button or non-traditional gameplay prototype in 48 hours. Hosted by the newly founded inter-campus collective.',
+      organizerId: organizers[`Inter-Collegiate Indie Game Collective_${colleges['cascade-poly']._id}`]._id,
+      collegeId: colleges['cascade-poly']._id,
+      eventType: 'hackathon',
+      tags: ['game-dev', 'indie-games', 'unity', 'godot'],
+      prerequisites: ['Any game engine'],
+      expectedOutcomes: ['Steam Key Giveaways', 'Energy Drinks & Snacks Provided'],
+      createdBy: users['acm@cascade.edu']._id,
+      status: 'active',
+    },
+    {
+      title: 'Venture Catalyst: Collegiate Pitch Showcase',
+      description: 'Selected collegiate founders from Cascade Poly, Northbridge, and St. Jude pitch pre-seed ventures before a panel of 12 regional venture partners.',
+      organizerId: organizers[`Northbridge Venture Collective_${colleges['northbridge-univ']._id}`]._id,
+      collegeId: colleges['northbridge-univ']._id,
+      eventType: 'conference',
+      tags: ['venture', 'startups', 'pitching', 'networking'],
+      prerequisites: ['Pitch deck or prototype'],
+      expectedOutcomes: ['Catered 3-Course Dinner', 'VC Contact Directory'],
+      createdBy: users['venture@northbridge.edu']._id,
+      status: 'active',
+    },
+    // Legacy Events
     {
       title: 'Apex Inter-College Hackathon',
       description: '36-hour premier hackathon open to engineering students across all colleges.',
@@ -265,24 +409,126 @@ export async function seedDatabase({ silent = false } = {}) {
   }
   log(`✓ Seeded ${Object.keys(events).length} event series.`);
 
-  // 5. Seed Event Editions
-  // - Edition A: Upcoming, Open to All Colleges (Apex Inter-College Hackathon 2026)
-  // - Edition B: Upcoming, Host College Only (Apex Internal Web Bootcamp 2026)
-  // - Edition C: Completed, with verified reviews (Apex Inter-College Hackathon 2025)
+  // 5. Seed Event Editions (Active & Published)
   const now = new Date();
-  const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const nextMonthEnd = new Date(nextMonth.getTime() + 2 * 24 * 60 * 60 * 1000);
-  const lastYearStart = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  const lastYearEnd = new Date(lastYearStart.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const d1 = new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000);
+  const d2 = new Date(now.getTime() + 18 * 24 * 60 * 60 * 1000);
+  const d3 = new Date(now.getTime() + 25 * 24 * 60 * 60 * 1000);
+  const d4 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Past, reviewed
+  const d5 = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
+  const d6 = new Date(now.getTime() + 40 * 24 * 60 * 60 * 1000);
 
   const editionsData = [
+    {
+      eventId: events['Cascade HackFest 2026']._id,
+      collegeId: colleges['cascade-poly']._id,
+      editionLabel: 'Annual 16th Collegiate Hackathon',
+      eligibility: 'all_active_colleges',
+      startAt: d1,
+      endAt: new Date(d1.getTime() + 36 * 60 * 60 * 1000),
+      timezone: 'America/Los_Angeles',
+      venue: 'Cascade Innovation Pavilion & Engineering Center',
+      costAmount: 0,
+      currency: 'USD',
+      registrationMode: 'platform',
+      capacity: 450,
+      status: 'published',
+      perks: ['Free Pizza & Boba 🧋', '$250 AWS Cloud Credits'],
+      imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      eventId: events['Autonomous Drone Systems & ROS2 Hands-On']._id,
+      collegeId: colleges['cascade-poly']._id,
+      editionLabel: 'Fall 2026 Lab Intensive',
+      eligibility: 'all_active_colleges',
+      startAt: d2,
+      endAt: new Date(d2.getTime() + 4 * 60 * 60 * 1000),
+      timezone: 'America/Los_Angeles',
+      venue: 'Robotics Mechatronics Lab, Room 302',
+      costAmount: 15,
+      currency: 'USD',
+      registrationMode: 'platform',
+      capacity: 35,
+      status: 'published',
+      perks: ['Hardware Flight Kits Provided', 'Lab Bench Certificate'],
+      imageUrl: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      eventId: events['Decentralized Autonomous Computing Symposium']._id,
+      collegeId: colleges['cascade-poly']._id,
+      editionLabel: 'Inaugural Colloquium',
+      eligibility: 'all_active_colleges',
+      startAt: d3,
+      endAt: new Date(d3.getTime() + 8 * 60 * 60 * 1000),
+      timezone: 'America/Los_Angeles',
+      venue: 'Cascade Sciences Amphitheater B',
+      costAmount: 0,
+      currency: 'USD',
+      registrationMode: 'platform',
+      capacity: 180,
+      status: 'published',
+      perks: ['Free Lunch Buffet', 'Preprint Research Bound Copies'],
+      imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      eventId: events['Generative AI Workflows for Product Designers']._id,
+      collegeId: colleges['st-jude-art']._id,
+      editionLabel: 'Spring 2026 Retrospective',
+      eligibility: 'all_active_colleges',
+      startAt: d4,
+      endAt: new Date(d4.getTime() + 5 * 60 * 60 * 1000),
+      timezone: 'America/Los_Angeles',
+      venue: 'St. Jude Virtual Auditorium & Studio 4',
+      costAmount: 15,
+      currency: 'USD',
+      registrationMode: 'platform',
+      capacity: 100,
+      status: 'completed',
+      perks: ['Diffusion Studio Credits', 'Design Token Starter Pack'],
+      imageUrl: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      eventId: events['Zero-G: Experimental 48-Hour Mechanic Jam']._id,
+      collegeId: colleges['cascade-poly']._id,
+      editionLabel: 'Jam Edition 01',
+      eligibility: 'all_active_colleges',
+      startAt: d5,
+      endAt: new Date(d5.getTime() + 48 * 60 * 60 * 1000),
+      timezone: 'America/Los_Angeles',
+      venue: 'Cascade Student Center Commons',
+      costAmount: 0,
+      currency: 'USD',
+      registrationMode: 'platform',
+      capacity: 120,
+      status: 'published',
+      perks: ['Steam Key Giveaways', 'Energy Drinks & Snacks ⚡'],
+      imageUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      eventId: events['Venture Catalyst: Collegiate Pitch Showcase']._id,
+      collegeId: colleges['northbridge-univ']._id,
+      editionLabel: '2026 Inter-Campus Demo Day',
+      eligibility: 'all_active_colleges',
+      startAt: d6,
+      endAt: new Date(d6.getTime() + 6 * 60 * 60 * 1000),
+      timezone: 'America/Los_Angeles',
+      venue: 'Northbridge School of Management Auditorium',
+      costAmount: 25,
+      currency: 'USD',
+      registrationMode: 'platform',
+      capacity: 200,
+      status: 'published',
+      perks: ['Catered 3-Course Dinner 🍷', 'VC Contact Directory'],
+      imageUrl: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=800&q=80',
+    },
+    // Legacy editions
     {
       eventId: events['Apex Inter-College Hackathon']._id,
       collegeId: colleges['apex-tech']._id,
       editionLabel: '2026 Edition',
-      eligibility: 'all_active_colleges', // Open to all participating colleges!
-      startAt: nextMonth,
-      endAt: nextMonthEnd,
+      eligibility: 'all_active_colleges',
+      startAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      endAt: new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000),
       timezone: 'Asia/Kolkata',
       venue: 'Apex Innovation Campus, Bangalore',
       costAmount: 0,
@@ -295,7 +541,7 @@ export async function seedDatabase({ silent = false } = {}) {
       eventId: events['Apex Internal Web Development Bootcamp']._id,
       collegeId: colleges['apex-tech']._id,
       editionLabel: 'Spring 2026',
-      eligibility: 'host_college_only', // Restricted to host college!
+      eligibility: 'host_college_only',
       startAt: new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000),
       endAt: new Date(now.getTime() + 16 * 24 * 60 * 60 * 1000),
       timezone: 'Asia/Kolkata',
@@ -305,21 +551,6 @@ export async function seedDatabase({ silent = false } = {}) {
       registrationMode: 'platform',
       capacity: 60,
       status: 'published',
-    },
-    {
-      eventId: events['Apex Inter-College Hackathon']._id,
-      collegeId: colleges['apex-tech']._id,
-      editionLabel: '2025 Edition',
-      eligibility: 'all_active_colleges',
-      startAt: lastYearStart,
-      endAt: lastYearEnd,
-      timezone: 'Asia/Kolkata',
-      venue: 'Apex Auditorium',
-      costAmount: 0,
-      currency: 'INR',
-      registrationMode: 'platform',
-      capacity: 200,
-      status: 'completed', // Completed edition for scoring history
     },
   ];
 
@@ -332,42 +563,34 @@ export async function seedDatabase({ silent = false } = {}) {
     );
     editions[`${item.eventId}_${item.editionLabel}`] = ed;
   }
-  log(`✓ Seeded ${Object.keys(editions).length} event editions across eligibility policies.`);
+  log(`✓ Seeded ${Object.keys(editions).length} event editions.`);
 
-  // 6. Seed Registrations
-  // Register Apex, Metro, and Cascade students for the upcoming cross-college hackathon
-  const hackathon2026 = editions[`${events['Apex Inter-College Hackathon']._id}_2026 Edition`];
-  const hackathon2025 = editions[`${events['Apex Inter-College Hackathon']._id}_2025 Edition`];
+  // 6. Seed Registrations for Cascade HackFest & Other Editions
+  const hackfest = editions[`${events['Cascade HackFest 2026']._id}_Annual 16th Collegiate Hackathon`];
+  const droneWorkshop = editions[`${events['Autonomous Drone Systems & ROS2 Hands-On']._id}_Fall 2026 Lab Intensive`];
+  const designGenAI = editions[`${events['Generative AI Workflows for Product Designers']._id}_Spring 2026 Retrospective`];
 
   const registrationsData = [
     {
-      eventEditionId: hackathon2026._id,
-      userId: users['student.apex@eventrank.test']._id,
-      collegeId: colleges['apex-tech']._id,
+      eventEditionId: hackfest._id,
+      userId: users['alex.rivera@cascade.edu']._id,
+      collegeId: colleges['cascade-poly']._id,
       status: 'registered',
       registeredAt: new Date(),
     },
     {
-      eventEditionId: hackathon2026._id,
-      userId: users['student.metro@eventrank.test']._id,
-      collegeId: colleges['metro-state']._id,
+      eventEditionId: droneWorkshop._id,
+      userId: users['alex.rivera@cascade.edu']._id,
+      collegeId: colleges['cascade-poly']._id,
       status: 'registered',
       registeredAt: new Date(),
     },
     {
-      eventEditionId: hackathon2026._id,
-      userId: users['student.cascade@eventrank.test']._id,
-      collegeId: colleges['cascade-eng']._id,
-      status: 'registered',
-      registeredAt: new Date(),
-    },
-    // Past edition registration for student.apex
-    {
-      eventEditionId: hackathon2025._id,
-      userId: users['student.apex@eventrank.test']._id,
-      collegeId: colleges['apex-tech']._id,
+      eventEditionId: designGenAI._id,
+      userId: users['alex.rivera@cascade.edu']._id,
+      collegeId: colleges['cascade-poly']._id,
       status: 'attended',
-      registeredAt: lastYearStart,
+      registeredAt: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000),
     },
   ];
 
@@ -378,64 +601,54 @@ export async function seedDatabase({ silent = false } = {}) {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   }
-  log(`✓ Seeded ${registrationsData.length} registrations across participating colleges.`);
 
-  // 7. Seed Attendance Verification (for hackathon 2025 attended student)
-  const attendanceRecord = await AttendanceVerification.findOneAndUpdate(
-    { eventEditionId: hackathon2025._id, userId: users['student.apex@eventrank.test']._id },
+  // 7. Seed Attendance Verification & Verified Review for past edition
+  const pastVerification = await AttendanceVerification.findOneAndUpdate(
+    { eventEditionId: designGenAI._id, userId: users['alex.rivera@cascade.edu']._id },
     {
       $set: {
-        eventEditionId: hackathon2025._id,
-        userId: users['student.apex@eventrank.test']._id,
         method: 'organizer_checkin',
         status: 'verified',
-        verifiedBy: users['organizer@apex.test']._id,
-        verifiedAt: lastYearStart,
-        evidenceReference: 'CHK-2025-APEX-001',
-        auditMetadata: { scanner: 'gate_1', timestamp: lastYearStart.toISOString() },
+        verifiedAt: new Date(),
+        verifiedBy: users['design@stjude.edu']._id,
       },
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
-  log('✓ Seeded attendance verification record.');
 
-  // 8. Seed Verified Review (linked to verified attendance record)
   await Review.findOneAndUpdate(
-    { eventEditionId: hackathon2025._id, userId: users['student.apex@eventrank.test']._id },
+    { eventEditionId: designGenAI._id, userId: users['alex.rivera@cascade.edu']._id },
     {
       $set: {
-        eventEditionId: hackathon2025._id,
-        eventId: events['Apex Inter-College Hackathon']._id,
-        userId: users['student.apex@eventrank.test']._id,
-        attendanceVerificationId: attendanceRecord._id,
+        eventId: events['Generative AI Workflows for Product Designers']._id,
+        attendanceVerificationId: pastVerification._id,
         dimensions: {
           organization: 5,
-          contentValue: 4,
-          networking: 5,
+          contentValue: 5,
+          networking: 4,
           timeCostValue: 5,
         },
         overallRating: 4.8,
-        text: 'Incredible mentorship, seamless logistics, and intense competition. Worth every hour.',
+        text: 'Brilliant hands-on workflow. The prompt latent diffusion techniques were directly applicable to our design tokens.',
         status: 'published',
-        conflictFlags: [],
       },
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
-  log('✓ Seeded verified attendee review.');
 
   log('✨ Multi-college database seeding completed idempotently!');
 }
 
-// Allow direct CLI execution: `node src/seeds/seed.js`
-if (process.argv[1]?.endsWith('seed.js')) {
-  try {
-    await connectDB();
-    await seedDatabase();
-    await disconnectDB();
-    process.exit(0);
-  } catch (err) {
-    console.error('Fatal seed error:', err);
-    process.exit(1);
-  }
+if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
+  (async () => {
+    try {
+      await connectDB();
+      await seedDatabase();
+      await disconnectDB();
+      process.exit(0);
+    } catch (err) {
+      console.error('❌ Seeding failed:', err);
+      process.exit(1);
+    }
+  })();
 }

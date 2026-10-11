@@ -103,8 +103,9 @@ describe('Registration Lifecycle & Peer Signals API Tests (/api/v1/event-edition
   });
 
   it('allows a student to cancel their registration and re-register later', async () => {
-    const student = await User.findOne({ email: 'student.cascade@eventrank.test' });
-    const edition = await EventEdition.findOne({ eligibility: 'all_active_colleges' });
+    // Alex Rivera has an active seeded registration on Cascade HackFest
+    const student = await User.findOne({ email: 'alex.rivera@cascade.edu' });
+    const edition = await EventEdition.findOne({ editionLabel: 'Annual 16th Collegiate Hackathon' });
 
     const token = signToken({
       id: student._id,
@@ -138,9 +139,10 @@ describe('Registration Lifecycle & Peer Signals API Tests (/api/v1/event-edition
   });
 
   it('returns pre-event signals with authoritative registrations, scoped peer counts, and privacy thresholds', async () => {
-    const student = await User.findOne({ email: 'student.apex@eventrank.test' });
+    // Alex Rivera (cascade-poly) holds the only seeded registration on Cascade HackFest
+    const student = await User.findOne({ email: 'alex.rivera@cascade.edu' });
     const hackathonEdition = await EventEdition.findOne({
-      editionLabel: '2026 Edition',
+      editionLabel: 'Annual 16th Collegiate Hackathon',
       eligibility: 'all_active_colleges',
     });
 
@@ -164,18 +166,16 @@ describe('Registration Lifecycle & Peer Signals API Tests (/api/v1/event-edition
     expect(signals.peersGoing).toBeDefined();
     expect(signals.peersGoing.scopedCollegeId.toString()).toBe(student.collegeId.toString());
 
-    // Because only 1 Apex peer is registered (< 5), privacy protection must mask the raw count
+    // Because only 1 cascade-poly peer is registered (< 5), privacy protection must mask the raw count
     expect(signals.peersGoing.privacyProtected).toBe(true);
     expect(signals.peersGoing.countDisplay).toBe('< 5');
     expect(signals.peersGoing.rawCount).toBeNull(); // Private count suppressed
 
-    // Organizer track record
+    // Organizer track record (Cascade ACM Chapter: HackFest + DAC Symposium, none completed yet)
     expect(signals.organizerHistory.totalEventsCount).toBeGreaterThan(0);
-    expect(signals.organizerHistory.completedEditionsCount).toBe(1);
+    expect(signals.organizerHistory.completedEditionsCount).toBe(0);
 
-    // Past edition rating (derived from Hackathon 2025 Edition)
-    expect(signals.pastEditionRating).toBeDefined();
-    expect(signals.pastEditionRating.averageRating).toBe(4.8);
-    expect(signals.pastEditionRating.reviewCount).toBe(1);
+    // No past completed HackFest edition in fixtures, so no past-edition rating yet
+    expect(signals.pastEditionRating ?? null).toBeNull();
   });
 });

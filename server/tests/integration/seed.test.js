@@ -22,15 +22,17 @@ describe('Seed Script Idempotency & Fixture Integrity Tests', () => {
     const eventCount1 = await Event.countDocuments();
     const editionCount1 = await EventEdition.countDocuments();
     const regCount1 = await Registration.countDocuments();
+    const attendanceCount1 = await AttendanceVerification.countDocuments();
     const reviewCount1 = await Review.countDocuments();
 
-    expect(collegeCount1).toBe(3); // 3 colleges
-    expect(userCount1).toBe(8);    // 8 users across roles
-    expect(orgCount1).toBe(3);     // 3 organizers
-    expect(eventCount1).toBe(3);   // 3 event series
-    expect(editionCount1).toBe(3); // 3 editions
-    expect(regCount1).toBe(4);     // 4 registrations
-    expect(reviewCount1).toBe(1);  // 1 verified review
+    expect(collegeCount1).toBe(6);   // 6 active college fixtures
+    expect(userCount1).toBe(12);     // 12 users across student/organizer/admin roles
+    expect(orgCount1).toBe(8);       // 8 organizers, institution-scoped
+    expect(eventCount1).toBe(9);     // 9 event series
+    expect(editionCount1).toBe(8);   // 8 editions (7 published + 1 completed)
+    expect(regCount1).toBe(3);       // 3 registrations
+    expect(attendanceCount1).toBe(1); // 1 verified attendance fixture
+    expect(reviewCount1).toBe(1);    // 1 verified review fixture
 
     // Second seed execution - must be idempotent!
     await seedDatabase({ silent: true });
@@ -41,6 +43,7 @@ describe('Seed Script Idempotency & Fixture Integrity Tests', () => {
     const eventCount2 = await Event.countDocuments();
     const editionCount2 = await EventEdition.countDocuments();
     const regCount2 = await Registration.countDocuments();
+    const attendanceCount2 = await AttendanceVerification.countDocuments();
     const reviewCount2 = await Review.countDocuments();
 
     expect(collegeCount2).toBe(collegeCount1);
@@ -49,6 +52,7 @@ describe('Seed Script Idempotency & Fixture Integrity Tests', () => {
     expect(eventCount2).toBe(eventCount1);
     expect(editionCount2).toBe(editionCount1);
     expect(regCount2).toBe(regCount1);
+    expect(attendanceCount2).toBe(attendanceCount1);
     expect(reviewCount2).toBe(reviewCount1);
   });
 

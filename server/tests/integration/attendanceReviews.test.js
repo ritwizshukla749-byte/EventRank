@@ -141,7 +141,7 @@ describe('Phase 4: Attendance Verification & Reviews Integration Tests', () => {
 
     it('INVARIANT: unverified attendee cannot submit an official review', async () => {
       const unverifiedStudent = await User.findOne({ email: 'student.metro@eventrank.test' });
-      const completedEdition = await EventEdition.findOne({ editionLabel: '2025 Edition' });
+      const completedEdition = await EventEdition.findOne({ editionLabel: 'Spring 2026 Retrospective' });
 
       // Ensure no verified attendance exists for this student
       await AttendanceVerification.deleteMany({
@@ -169,7 +169,7 @@ describe('Phase 4: Attendance Verification & Reviews Integration Tests', () => {
 
     it('INVARIANT: verified attendee submits review, duplicate is rejected, and score refreshes', async () => {
       const student = await User.findOne({ email: 'student.cascade@eventrank.test' });
-      const completedEdition = await EventEdition.findOne({ editionLabel: '2025 Edition' });
+      const completedEdition = await EventEdition.findOne({ editionLabel: 'Spring 2026 Retrospective' });
 
       // Grant verified attendance
       await AttendanceVerification.create({
@@ -222,7 +222,7 @@ describe('Phase 4: Attendance Verification & Reviews Integration Tests', () => {
     });
 
     it('lists published edition reviews with structured dimension averages', async () => {
-      const completedEdition = await EventEdition.findOne({ editionLabel: '2025 Edition' });
+      const completedEdition = await EventEdition.findOne({ editionLabel: 'Spring 2026 Retrospective' });
 
       const res = await request(app).get(`/api/v1/event-editions/${completedEdition._id}/reviews`);
 
@@ -234,21 +234,21 @@ describe('Phase 4: Attendance Verification & Reviews Integration Tests', () => {
     });
 
     it('allows reporting and moderator status transition with college scope enforcement', async () => {
-      const completedEdition = await EventEdition.findOne({ editionLabel: '2025 Edition' });
+      const completedEdition = await EventEdition.findOne({ editionLabel: 'Spring 2026 Retrospective' });
       const review = await Review.findOne({ eventEditionId: completedEdition._id });
       const student = await User.findOne({ email: 'student.apex@eventrank.test' });
-      const apexAdmin = await User.findOne({ email: 'admin@apex.test' });
-      const metroAdmin = await User.findOne({ email: 'admin@metro.test' });
+      const foreignAdmin = await User.findOne({ email: 'admin@apex.test' });
+      const hostCollegeAdmin = await User.findOne({ email: 'admin@stjude.edu' });
 
       const studentToken = signToken({ id: student._id });
-      const apexAdminToken = signToken({
-        id: apexAdmin._id,
-        collegeId: apexAdmin.collegeId,
+      const foreignAdminToken = signToken({
+        id: foreignAdmin._id,
+        collegeId: foreignAdmin.collegeId,
         collegeRole: 'college_admin',
       });
-      const metroAdminToken = signToken({
-        id: metroAdmin._id,
-        collegeId: metroAdmin.collegeId,
+      const hostAdminToken = signToken({
+        id: hostCollegeAdmin._id,
+        collegeId: hostCollegeAdmin.collegeId,
         collegeRole: 'college_admin',
       });
 
@@ -260,18 +260,18 @@ describe('Phase 4: Attendance Verification & Reviews Integration Tests', () => {
 
       expect(reportRes.status).toBe(200);
 
-      // 2. Metro Admin attempts to moderate Apex event review -> BLOCKED (403)
+      // 2. Apex admin attempts to moderate a St. Jude event review -> BLOCKED (403)
       const badModRes = await request(app)
         .post(`/api/v1/reviews/${review._id}/moderate`)
-        .set('Authorization', `Bearer ${metroAdminToken}`)
+        .set('Authorization', `Bearer ${foreignAdminToken}`)
         .send({ status: 'hidden', moderationReason: 'Flagged inappropriate' });
 
       expect(badModRes.status).toBe(403);
 
-      // 3. Apex Admin moderates own college event review -> ALLOWED (200)
+      // 3. St. Jude admin moderates own college event review -> ALLOWED (200)
       const goodModRes = await request(app)
         .post(`/api/v1/reviews/${review._id}/moderate`)
-        .set('Authorization', `Bearer ${apexAdminToken}`)
+        .set('Authorization', `Bearer ${hostAdminToken}`)
         .send({ status: 'hidden', moderationReason: 'Policy violation confirmed' });
 
       expect(goodModRes.status).toBe(200);

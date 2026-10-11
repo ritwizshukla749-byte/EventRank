@@ -44,8 +44,8 @@ describe('Organizer API & Institution-Scoped History Integration Tests (/api/v1/
     expect(apexRes.status).toBe(200);
     const apexData = apexRes.body.data.organizer;
 
-    // Apex Coding Club has completed Hackathon 2025 and upcoming Bootcamp & Hackathon 2026
-    expect(apexData.metrics.completedEditionsCount).toBe(1);
+    // Apex Coding Club has Hackathon 2026 (published) and Bootcamp (published); no completed editions yet
+    expect(apexData.metrics.completedEditionsCount).toBe(0);
     expect(apexData.metrics.totalEventsCreated).toBe(2);
 
     // Query Metro organizer profile
