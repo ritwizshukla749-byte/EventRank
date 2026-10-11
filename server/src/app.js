@@ -9,6 +9,7 @@ import collegeRoutes from './modules/colleges/college.routes.js';
 import eventRoutes from './modules/events/event.routes.js';
 import organizerRoutes from './modules/organizers/organizer.routes.js';
 import registrationRoutes from './modules/registrations/registration.routes.js';
+import scoringRoutes from './modules/scoring/scoring.routes.js';
 import { compare } from './modules/events/event.controller.js';
 import { validateRequest } from './middleware/validate.js';
 import { compareEventsSchema } from './modules/events/event.validation.js';
@@ -41,6 +42,7 @@ export function createApp() {
   apiRouter.use('/events', eventRoutes);
   apiRouter.use('/organizers', organizerRoutes);
   apiRouter.use('/event-editions', registrationRoutes);
+  apiRouter.use('/scoring', scoringRoutes);
   apiRouter.post('/compare', validateRequest({ body: compareEventsSchema }), compare);
 
   // Mount API router
