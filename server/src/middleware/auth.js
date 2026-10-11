@@ -31,6 +31,28 @@ export async function authenticate(req, res, next) {
   next();
 }
 
+export async function optionalAuthenticate(req, res, next) {
+  let token = req.cookies?.token;
+
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  const decoded = verifyToken(token);
+  if (decoded && decoded.id) {
+    const user = await User.findById(decoded.id);
+    if (user && user.status === 'active') {
+      req.user = user;
+    }
+  }
+
+  next();
+}
+
 /**
  * Enforce platform-wide global role (e.g. platform_admin)
  */

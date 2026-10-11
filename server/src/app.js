@@ -6,6 +6,12 @@ import { config } from './config/env.js';
 import healthRoutes from './routes/health.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
 import collegeRoutes from './modules/colleges/college.routes.js';
+import eventRoutes from './modules/events/event.routes.js';
+import organizerRoutes from './modules/organizers/organizer.routes.js';
+import registrationRoutes from './modules/registrations/registration.routes.js';
+import { compare } from './modules/events/event.controller.js';
+import { validateRequest } from './middleware/validate.js';
+import { compareEventsSchema } from './modules/events/event.validation.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 export function createApp() {
@@ -32,6 +38,10 @@ export function createApp() {
   apiRouter.use(healthRoutes);
   apiRouter.use('/auth', authRoutes);
   apiRouter.use('/colleges', collegeRoutes);
+  apiRouter.use('/events', eventRoutes);
+  apiRouter.use('/organizers', organizerRoutes);
+  apiRouter.use('/event-editions', registrationRoutes);
+  apiRouter.post('/compare', validateRequest({ body: compareEventsSchema }), compare);
 
   // Mount API router
   app.use('/api/v1', apiRouter);
