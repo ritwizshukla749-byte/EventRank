@@ -56,11 +56,11 @@ export function MyRegistrations() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-indigo-400" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-indigo-600" />
           <span>My Event Registrations</span>
         </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+        <p className="text-xs sm:text-sm text-slate-600 mt-1">
           Track upcoming events, verify your on-campus attendance, and leave peer-reviewed feedback.
         </p>
       </div>
@@ -84,19 +84,19 @@ export function MyRegistrations() {
             return (
               <div
                 key={reg._id}
-                className="p-5 rounded-2xl border border-white/10 bg-[#121826]/70 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs hover:border-slate-300 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Badge variant={isAttended ? 'success' : 'default'} size="sm">
                       {isAttended ? 'Attendance Verified' : isCancelled ? 'Cancelled' : 'Registered'}
                     </Badge>
-                    <span className="text-[11px] font-mono text-slate-400">
+                    <span className="text-[11px] font-mono text-slate-500">
                       {edition.startAt ? new Date(edition.startAt).toLocaleDateString() : 'Upcoming'}
                     </span>
                   </div>
-                  <h3 className="text-base font-semibold text-slate-100">{event.title || 'Event'}</h3>
-                  <p className="text-xs text-slate-400">{edition.venue || 'Campus Venue'}</p>
+                  <h3 className="text-base font-semibold text-slate-900">{event.title || 'Event'}</h3>
+                  <p className="text-xs text-slate-600">{edition.venue || 'Campus Venue'}</p>
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -107,7 +107,7 @@ export function MyRegistrations() {
                       onClick={() => setActiveCheckInEditionId(edition._id)}
                       className="text-xs gap-1.5 w-full sm:w-auto"
                     >
-                      <QrCode className="w-3.5 h-3.5 text-indigo-400" />
+                      <QrCode className="w-3.5 h-3.5 text-indigo-600" />
                       <span>Check-In Code</span>
                     </Button>
                   )}
@@ -135,22 +135,22 @@ export function MyRegistrations() {
 
       {/* Check-In Modal Dialog */}
       {activeCheckInEditionId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="max-w-sm w-full p-6 rounded-2xl border border-white/10 bg-[#121826] shadow-2xl space-y-4">
-            <h3 className="text-base font-semibold text-slate-100 flex items-center gap-2">
-              <QrCode className="w-5 h-5 text-indigo-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="max-w-sm w-full p-6 rounded-2xl border border-slate-200 bg-white shadow-xl space-y-4">
+            <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-indigo-600" />
               <span>Verify Attendance</span>
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Enter the 6-character check-in code provided by the organizer at the venue to unlock verified attendee status.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Enter the unique check-in code displayed at the event venue. Codes are 6 alphanumeric characters (e.g., AB12CD).
             </p>
 
             {checkInMessage && (
               <div
-                className={`p-2.5 rounded-lg text-xs ${
+                className={`p-2.5 rounded-lg text-xs font-medium ${
                   checkInMessage.type === 'success'
-                    ? 'bg-emerald-950/30 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-rose-950/30 text-rose-300 border border-rose-500/30'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
                 }`}
               >
                 {checkInMessage.text}
@@ -158,13 +158,21 @@ export function MyRegistrations() {
             )}
 
             <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                Check-In Code
+              </label>
               <input
                 type="text"
-                placeholder="ENTER CODE (e.g. AB12CD)"
+                placeholder="AB12CD"
+                maxLength={6}
                 value={checkInToken}
                 onChange={(e) => setCheckInToken(e.target.value.toUpperCase())}
-                className="w-full text-center tracking-widest font-mono text-sm uppercase px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+                className="w-full text-center tracking-widest font-mono text-lg uppercase px-3 py-3 bg-slate-50 border-2 border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 transition-colors"
               />
+              <p className="text-[11px] text-slate-500 mt-1.5 flex items-start gap-1">
+                <QrCode className="w-3 h-3 mt-0.5 shrink-0" />
+                <span>Find this code on event posters, organizer announcements, or venue check-in displays.</span>
+              </p>
             </div>
 
             <div className="flex gap-2 pt-2">
