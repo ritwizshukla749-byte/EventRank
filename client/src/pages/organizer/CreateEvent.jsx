@@ -74,38 +74,38 @@ export function CreateEvent() {
       <div>
         <Link
           to="/organizer"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors mb-2"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors mb-2"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Organizer Dashboard</span>
         </Link>
-        <h1 className="text-2xl font-bold tracking-tight text-white">Create New Campus Event</h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Create New Campus Event</h1>
+        <p className="text-xs text-slate-600 mt-1">
           Publish a new event edition{organizer ? ` under ${organizer.name}` : ''}. Configure cross-college eligibility policies.
         </p>
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl border border-rose-500/20 bg-rose-950/20 text-rose-300 text-xs">
+        <div className="p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs font-medium">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="p-6 rounded-2xl border border-white/10 bg-[#121826]/70 backdrop-blur-md space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="p-6 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-4 text-xs">
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Event Title</label>
+          <label className="block text-slate-700 font-medium mb-1">Event Title</label>
           <input
             type="text"
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Annual Inter-College Hackathon 2026"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500"
           />
         </div>
 
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Description</label>
+          <label className="block text-slate-700 font-medium mb-1">Description</label>
           <textarea
             rows={3}
             required
@@ -113,17 +113,17 @@ export function CreateEvent() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Highlight learning outcomes, competition tracks, and prerequisites..."
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Event Format</label>
+            <label className="block text-slate-700 font-medium mb-1">Event Format</label>
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
-              className="w-full px-3 py-2 bg-[#121826] border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
             >
               <option value="hackathon">Hackathon</option>
               <option value="workshop">Workshop</option>
@@ -136,11 +136,11 @@ export function CreateEvent() {
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Cross-College Eligibility</label>
+            <label className="block text-slate-700 font-medium mb-1">Cross-College Eligibility</label>
             <select
               value={eligibility}
               onChange={(e) => setEligibility(e.target.value)}
-              className="w-full px-3 py-2 bg-[#121826] border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
             >
               <option value="all_active_colleges">Open to all participating colleges</option>
               <option value="host_college_only">Host college students only</option>
@@ -149,29 +149,29 @@ export function CreateEvent() {
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Start Date & Time</label>
+            <label className="block text-slate-700 font-medium mb-1">Start Date & Time</label>
             <input
               type="datetime-local"
               required
               value={startAt}
               onChange={(e) => setStartAt(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">End Date & Time</label>
+            <label className="block text-slate-700 font-medium mb-1">End Date & Time</label>
             <input
               type="datetime-local"
               required
               value={endAt}
               onChange={(e) => setEndAt(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Venue / Room</label>
+            <label className="block text-slate-700 font-medium mb-1">Venue / Room</label>
             <input
               type="text"
               required
@@ -179,30 +179,30 @@ export function CreateEvent() {
               value={venue}
               onChange={(e) => setVenue(e.target.value)}
               placeholder="e.g. CS Lab 3 / Auditorium"
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Registration Fee (₹)</label>
+            <label className="block text-slate-700 font-medium mb-1">Registration Fee (₹)</label>
             <input
               type="number"
               min="0"
               value={costAmount}
               onChange={(e) => setCostAmount(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:bg-white focus:border-indigo-500"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Tags (comma-separated)</label>
+          <label className="block text-slate-700 font-medium mb-1">Tags (comma-separated)</label>
           <input
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="AI, WebDev, Robotics, Python"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500"
           />
         </div>
 
