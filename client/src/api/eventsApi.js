@@ -9,6 +9,7 @@ export const eventsApi = {
     const q = params.q || params.search;
     if (q) query.append('q', q);
     if (params.collegeId) query.append('collegeId', params.collegeId);
+    if (params.organizerId) query.append('organizerId', params.organizerId);
     if (params.type) query.append('type', params.type);
     if (params.tags) query.append('tags', params.tags);
     if (params.minCost !== undefined && params.minCost !== '') query.append('minCost', params.minCost);
