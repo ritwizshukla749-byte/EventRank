@@ -6,6 +6,7 @@ export async function listPublishedEvents(query = {}, currentUser = null) {
   const {
     q,
     collegeId,
+    organizerId,
     type,
     tags,
     from,
@@ -37,10 +38,11 @@ export async function listPublishedEvents(query = {}, currentUser = null) {
     if (maxCost !== undefined) editionFilter.costAmount.$lte = maxCost;
   }
 
-  // Filter on base Event fields if query string, type, or tags are provided
-  if (q || type || tags) {
+  // Filter on base Event fields if query string, type, tags, or organizerId are provided
+  if (q || type || tags || organizerId) {
     const eventMatch = {};
     if (type) eventMatch.eventType = type;
+    if (organizerId) eventMatch.organizerId = organizerId;
     if (tags) {
       const tagList = tags.split(',').map((t) => t.trim().toLowerCase());
       eventMatch.tags = { $in: tagList };
@@ -76,7 +78,7 @@ export async function listPublishedEvents(query = {}, currentUser = null) {
       .populate(editionPopulation)
       .lean();
 
-    const items = await formatEventListItems(editions);
+    const items = await formatEventListItems(editions, currentUser);
     const summaries = await scoreEditionSummaries(editions, currentUser);
 
     items.forEach((item, i) => {
@@ -124,7 +126,7 @@ export async function listPublishedEvents(query = {}, currentUser = null) {
     EventEdition.countDocuments(editionFilter),
   ]);
 
-  const items = await formatEventListItems(editions);
+  const items = await formatEventListItems(editions, currentUser);
   const computedTotal = total || items.length;
 
   return {
@@ -152,7 +154,7 @@ function scoreComparator(key) {
   };
 }
 
-async function formatEventListItems(editions) {
+async function formatEventListItems(editions, currentUser = null) {
   const editionIds = editions.map((e) => e._id);
 
   // Aggregate registration counts for these editions (interest signal, never quality)
@@ -162,6 +164,18 @@ async function formatEventListItems(editions) {
   ]);
 
   const countMap = new Map(regCounts.map((r) => [r._id.toString(), r.count]));
+
+  // Query current user's registrations for these editions
+  let userRegistrationSet = new Set();
+  if (currentUser && currentUser._id) {
+    const userRegs = await Registration.find({
+      userId: currentUser._id,
+      eventEditionId: { $in: editionIds },
+      status: 'registered',
+    }).select('eventEditionId');
+    
+    userRegistrationSet = new Set(userRegs.map((r) => r.eventEditionId.toString()));
+  }
 
   const formattedEvents = editions.map((ed) => {
     const event = ed.eventId || {};
@@ -199,6 +213,7 @@ async function formatEventListItems(editions) {
       capacity: ed.capacity,
       registrationCount: countMap.get(ed._id.toString()) || 0,
       status: ed.status,
+      isRegistered: userRegistrationSet.has(ed._id.toString()),
     };
   });
 

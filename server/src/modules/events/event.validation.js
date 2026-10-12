@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const listEventsQuerySchema = z.object({
   q: z.string().optional(),
   collegeId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid college ID').optional(),
+  organizerId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid organizer ID').optional(),
   type: z.enum(['hackathon', 'workshop', 'competition', 'cultural', 'talk', 'social', 'career']).optional(),
   tags: z.string().optional(),
   from: z.string().datetime({ offset: true }).optional().or(z.string().regex(/^\d{4}-\d{2}-\d{2}/).optional()),

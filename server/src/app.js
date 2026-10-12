@@ -13,6 +13,7 @@ import registrationRoutes from './modules/registrations/registration.routes.js';
 import attendanceRoutes from './modules/attendance/attendance.routes.js';
 import reviewRoutes, { reviewEditionRoutes } from './modules/reviews/review.routes.js';
 import scoringRoutes from './modules/scoring/scoring.routes.js';
+import savedEventRoutes from './modules/savedEvents/savedEvent.routes.js';
 import { compare } from './modules/events/event.controller.js';
 import { validateRequest } from './middleware/validate.js';
 import { compareEventsSchema } from './modules/events/event.validation.js';
@@ -51,6 +52,7 @@ export function createApp() {
   apiRouter.use('/event-editions', reviewEditionRoutes);
   apiRouter.use('/reviews', reviewRoutes);
   apiRouter.use('/scoring', scoringRoutes);
+  apiRouter.use('/saved-events', savedEventRoutes);
   apiRouter.post('/compare', optionalAuthenticate, validateRequest({ body: compareEventsSchema }), compare);
 
   // Mount API router
