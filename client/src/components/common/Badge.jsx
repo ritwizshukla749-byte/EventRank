@@ -13,14 +13,14 @@ export function Badge({
   };
 
   const variantStyles = {
-    default: 'bg-white/10 text-slate-300 border border-white/10',
-    college: 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-medium',
-    quality: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium',
-    fit: 'bg-purple-500/15 text-purple-300 border border-purple-500/30 font-medium',
-    success: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
-    warning: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
-    danger: 'bg-rose-500/15 text-rose-300 border border-rose-500/30',
-    info: 'bg-sky-500/15 text-sky-300 border border-sky-500/30',
+    default: 'bg-slate-100 text-slate-700 border border-slate-200',
+    college: 'bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium',
+    quality: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium',
+    fit: 'bg-purple-50 text-purple-700 border border-purple-200 font-medium',
+    success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    warning: 'bg-amber-50 text-amber-800 border border-amber-200',
+    danger: 'bg-rose-50 text-rose-700 border border-rose-200',
+    info: 'bg-sky-50 text-sky-700 border border-sky-200',
   };
 
   return (

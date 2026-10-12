@@ -11,7 +11,7 @@ export function Button({
   onClick,
   ...props
 }) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0d14] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const sizeStyles = {
     sm: 'text-xs px-2.5 py-1.5 gap-1.5',
@@ -20,12 +20,12 @@ export function Button({
   };
 
   const variantStyles = {
-    primary: 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/25 focus:ring-indigo-500',
-    secondary: 'bg-white/10 hover:bg-white/15 text-slate-200 border border-white/10 focus:ring-slate-400',
-    ghost: 'hover:bg-white/5 text-slate-300 hover:text-white focus:ring-slate-400',
-    danger: 'bg-rose-600/90 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20 focus:ring-rose-500',
-    quality: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 focus:ring-emerald-500',
-    fit: 'bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/20 focus:ring-purple-500',
+    primary: 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm hover:shadow focus:ring-indigo-500',
+    secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 focus:ring-slate-400',
+    ghost: 'hover:bg-slate-100 text-slate-700 hover:text-slate-900 focus:ring-slate-400',
+    danger: 'bg-rose-600 hover:bg-rose-500 text-white shadow-sm focus:ring-rose-500',
+    quality: 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm focus:ring-emerald-500',
+    fit: 'bg-purple-600 hover:bg-purple-500 text-white shadow-sm focus:ring-purple-500',
   };
 
   return (
