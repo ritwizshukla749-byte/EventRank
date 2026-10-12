@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
+import { LandingPage } from './pages/landing/LandingPage';
 import { Discover } from './pages/events/Discover';
 import { EventDetail } from './pages/events/EventDetail';
 import { Compare } from './pages/events/Compare';
@@ -45,7 +46,7 @@ export function AppRoutes() {
     <Routes>
       <Route element={<AppLayout />}>
         {/* Public Routes */}
-        <Route path="/" element={<Navigate to="/discover" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/discover" element={<Discover />} />
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/compare" element={<Compare />} />
