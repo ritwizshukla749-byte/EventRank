@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/common/Button';
 import { collegesApi } from '../../api/featuresApi';
 import { Sparkles } from 'lucide-react';
+import { getSafeRedirectPath } from '../../utils/redirectHelpers';
 
 export function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Get redirect path from query params
+  const redirectTo = getSafeRedirectPath(searchParams, '/discover');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,8 +25,8 @@ export function Login() {
     setError(null);
 
     try {
-      await login({ email, password });
-      navigate('/discover');
+      await login({ email, password }, redirectTo);
+      // Navigation handled by AuthContext
     } catch (err) {
       setError(err.message || 'Login failed. Please check credentials.');
     } finally {
@@ -30,45 +35,50 @@ export function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto my-12 p-8 rounded-3xl border border-white/10 bg-[#121826]/80 backdrop-blur-xl shadow-2xl">
+    <div className="max-w-md mx-auto my-12 p-8 rounded-3xl border border-slate-200 bg-white shadow-xl">
       <div className="text-center mb-6">
-        <div className="inline-flex p-2 rounded-xl bg-indigo-600/10 text-indigo-400 mb-3">
+        <div className="inline-flex p-2.5 rounded-xl bg-indigo-50 text-indigo-600 mb-3">
           <Sparkles className="w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold text-white">Sign In to EventRank</h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <h1 className="text-xl font-bold text-slate-900">Sign In to EventRank</h1>
+        <p className="text-xs text-slate-500 mt-1">
           Access personalized Fit scores, event registration & verified reviews.
         </p>
+        {redirectTo !== '/discover' && (
+          <p className="text-xs text-indigo-600 mt-2">
+            You'll be redirected after signing in.
+          </p>
+        )}
       </div>
 
       {error && (
-        <div className="p-3 mb-4 rounded-xl border border-rose-500/20 bg-rose-950/20 text-rose-300 text-xs">
+        <div className="p-3 mb-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Campus Email</label>
+          <label className="block text-slate-700 font-medium mb-1">Campus Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="student@college.edu"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Password</label>
+          <label className="block text-slate-700 font-medium mb-1">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           />
         </div>
 
@@ -82,9 +92,9 @@ export function Login() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-xs text-slate-400">
+      <div className="mt-6 text-center text-xs text-slate-500">
         Don't have an account?{' '}
-        <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium">
+        <Link to={`/register${searchParams.get('redirect') ? `?redirect=${searchParams.get('redirect')}` : ''}`} className="text-indigo-600 hover:text-indigo-700 font-medium">
           Create account
         </Link>
       </div>
@@ -95,6 +105,7 @@ export function Login() {
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -103,6 +114,9 @@ export function Register() {
   const [colleges, setColleges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Get redirect path from query params
+  const redirectTo = getSafeRedirectPath(searchParams, '/profile');
 
   useEffect(() => {
     collegesApi.list().then((res) => setColleges(res.colleges || []));
@@ -119,8 +133,8 @@ export function Register() {
     setError(null);
 
     try {
-      await register({ name, email, password, collegeId });
-      navigate('/profile');
+      await register({ name, email, password, collegeId }, redirectTo);
+      // Navigation handled by AuthContext
     } catch (err) {
       setError(err.message || 'Registration failed.');
     } finally {
@@ -129,43 +143,48 @@ export function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto my-12 p-8 rounded-3xl border border-white/10 bg-[#121826]/80 backdrop-blur-xl shadow-2xl">
+    <div className="max-w-md mx-auto my-12 p-8 rounded-3xl border border-slate-200 bg-white shadow-xl">
       <div className="text-center mb-6">
-        <div className="inline-flex p-2 rounded-xl bg-indigo-600/10 text-indigo-400 mb-3">
+        <div className="inline-flex p-2.5 rounded-xl bg-indigo-50 text-indigo-600 mb-3">
           <Sparkles className="w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold text-white">Join EventRank</h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <h1 className="text-xl font-bold text-slate-900">Join EventRank</h1>
+        <p className="text-xs text-slate-500 mt-1">
           Select your college to discover cross-campus events and peer signals.
         </p>
+        {redirectTo !== '/profile' && (
+          <p className="text-xs text-indigo-600 mt-2">
+            You'll be redirected after registration.
+          </p>
+        )}
       </div>
 
       {error && (
-        <div className="p-3 mb-4 rounded-xl border border-rose-500/20 bg-rose-950/20 text-rose-300 text-xs">
+        <div className="p-3 mb-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Full Name</label>
+          <label className="block text-slate-700 font-medium mb-1">Full Name</label>
           <input
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Alex Smith"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-slate-300 font-medium mb-1">College Association</label>
+          <label className="block text-slate-700 font-medium mb-1">College Association</label>
           <select
             required
             value={collegeId}
             onChange={(e) => setCollegeId(e.target.value)}
-            className="w-full px-3 py-2 bg-[#121826] border border-white/10 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           >
             <option value="">Select your participating college...</option>
             {colleges.map((c) => (
@@ -177,26 +196,26 @@ export function Register() {
         </div>
 
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Campus Email</label>
+          <label className="block text-slate-700 font-medium mb-1">Campus Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="alex@college.edu"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-slate-300 font-medium mb-1">Password</label>
+          <label className="block text-slate-700 font-medium mb-1">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Minimum 8 characters"
-            className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
           />
         </div>
 
@@ -210,9 +229,9 @@ export function Register() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center text-xs text-slate-400">
+      <div className="mt-6 text-center text-xs text-slate-500">
         Already registered?{' '}
-        <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">
+        <Link to={`/login${searchParams.get('redirect') ? `?redirect=${searchParams.get('redirect')}` : ''}`} className="text-indigo-600 hover:text-indigo-700 font-medium">
           Sign In
         </Link>
       </div>

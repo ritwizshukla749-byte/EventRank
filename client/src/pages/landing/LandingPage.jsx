@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { collegesApi } from '../../api/collegesApi';
 import { Button } from '../../components/common/Button';
 import {
   Sparkles,
@@ -29,6 +30,30 @@ export function LandingPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [colleges, setColleges] = useState([]);
+  const [collegesLoading, setCollegesLoading] = useState(true);
+
+  // Fetch participating colleges
+  useEffect(() => {
+    collegesApi
+      .list()
+      .then((data) => {
+        setColleges(data.colleges || []);
+      })
+      .catch((err) => {
+        console.error('Failed to load colleges', err);
+        // Fallback to hardcoded demo colleges if API fails
+        setColleges([
+          { name: 'Cascade Polytechnic' },
+          { name: 'Northbridge University' },
+          { name: 'St. Jude College of Art & Design' },
+          { name: 'Apex Institute of Technology' },
+        ]);
+      })
+      .finally(() => {
+        setCollegesLoading(false);
+      });
+  }, []);
 
   const handleSignIn = async (e) => {
     if (e) e.preventDefault();
@@ -68,7 +93,7 @@ export function LandingPage() {
           HERO SECTION — INSPIRED BY CLEAN PANORAMIC REFERENCE
           Vivid, completely sharp campus image with centered serif typography
           =================================================================== */}
-      <section className="relative min-h-[88vh] lg:min-h-[92vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-28 pb-20">
         {/* Crystal-Clear, Razor-Sharp Background Image (NO BLUR) */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
@@ -278,13 +303,22 @@ export function LandingPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 sm:gap-8 font-medium text-slate-700">
-            <span className="hover:text-slate-900 transition-colors">Cascade Polytechnic</span>
-            <span className="text-slate-300">•</span>
-            <span className="hover:text-slate-900 transition-colors">Northbridge University</span>
-            <span className="text-slate-300">•</span>
-            <span className="hover:text-slate-900 transition-colors">St. Jude College of Art & Design</span>
-            <span className="text-slate-300">•</span>
-            <span className="hover:text-slate-900 transition-colors">Apex Institute of Technology</span>
+            {collegesLoading ? (
+              <>
+                <span className="animate-pulse bg-slate-200 h-4 w-32 rounded"></span>
+                <span className="text-slate-300">•</span>
+                <span className="animate-pulse bg-slate-200 h-4 w-36 rounded"></span>
+                <span className="text-slate-300">•</span>
+                <span className="animate-pulse bg-slate-200 h-4 w-40 rounded"></span>
+              </>
+            ) : (
+              colleges.map((college, idx) => (
+                <React.Fragment key={college._id || college.name}>
+                  {idx > 0 && <span className="text-slate-300">•</span>}
+                  <span className="hover:text-slate-900 transition-colors">{college.name}</span>
+                </React.Fragment>
+              ))
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-emerald-700 font-medium">

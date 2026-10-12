@@ -5,6 +5,7 @@ import { compareApi } from '../../api/featuresApi';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/common/Button';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { SkeletonTable } from '../../components/common/SkeletonTable';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Layers, ArrowLeft, Trash2 } from 'lucide-react';
 
@@ -46,7 +47,7 @@ export function Compare() {
   // Approachable name for a comparison row while strictly separating the two score signals
   const qualityLabel = (quality) => {
     const score = typeof quality?.score === 'number' ? Math.round(quality.score) : null;
-    if (score === null) return <span className="text-slate-500 italic">No evidence yet</span>;
+    if (score === null) return <span className="text-slate-400 italic">No evidence yet</span>;
     const label =
       quality.status === 'review_supported'
         ? 'Review-backed'
@@ -55,8 +56,8 @@ export function Compare() {
         : 'Insufficient evidence';
     return (
       <span>
-        <span className="font-mono font-bold text-emerald-400">
-          {score} <span className="text-[10px] text-slate-400 font-normal">/100</span>
+        <span className="font-mono font-bold text-emerald-700">
+          {score} <span className="text-[10px] text-slate-500 font-normal">/100</span>
         </span>
         <span className="block text-[10px] text-slate-500 mt-0.5">{label}</span>
       </span>
@@ -65,12 +66,12 @@ export function Compare() {
 
   const fitLabel = (fit) => {
     const score = typeof fit?.score === 'number' ? Math.round(fit.score) : null;
-    if (!isAuthenticated) return <span className="text-slate-500 italic">Sign in for fit</span>;
-    if (score === null) return <span className="text-slate-500 italic">Not yet computed</span>;
+    if (!isAuthenticated) return <span className="text-slate-400 italic">Sign in for fit</span>;
+    if (score === null) return <span className="text-slate-400 italic">Not yet computed</span>;
     return (
       <span>
-        <span className="font-mono font-bold text-purple-400">
-          {score} <span className="text-[10px] text-slate-400 font-normal">/100</span>
+        <span className="font-mono font-bold text-purple-700">
+          {score} <span className="text-[10px] text-slate-500 font-normal">/100</span>
         </span>
         <span className="block text-[10px] text-slate-500 mt-0.5">
           {fit.status === 'personalized' ? 'Personalized' : 'Limited profile'}
@@ -102,44 +103,42 @@ export function Compare() {
         <div>
           <Link
             to="/discover"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors mb-2"
+            className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors mb-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Discovery</span>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <span>Event Comparison</span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
               {selectedEvents.length}/3 selected
             </span>
           </h1>
         </div>
 
-        <Button variant="ghost" size="sm" onClick={clearAll} className="text-rose-400 hover:text-rose-300">
+        <Button variant="ghost" size="sm" onClick={clearAll} className="text-rose-600 hover:text-rose-700">
           <Trash2 className="w-3.5 h-3.5 mr-1" />
           <span>Clear All</span>
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="py-20 flex justify-center">
-          <LoadingSpinner size="lg" />
-        </div>
+        <SkeletonTable columns={selectedEvents.length} />
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#121826]/80 backdrop-blur-md">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5">
-                <th className="p-4 font-semibold text-slate-300 w-44">Attribute</th>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                <th className="p-4 font-semibold text-slate-700 w-44">Attribute</th>
                 {compareData.map((event, idx) => (
                   <th key={idx} className="p-4 min-w-[220px]">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-slate-100 text-sm truncate">
+                      <span className="font-semibold text-slate-900 text-sm truncate">
                         {event.event?.title || event.title}
                       </span>
                       <button
                         onClick={() => removeEvent(event._id)}
-                        className="text-slate-400 hover:text-rose-400 p-1"
+                        className="text-slate-400 hover:text-rose-600 p-1 text-base cursor-pointer"
                         title="Remove"
                       >
                         ×
@@ -149,21 +148,21 @@ export function Compare() {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-100">
               {rows.map((row) => (
-                <tr key={row.key} className="hover:bg-white/[0.02]">
-                  <td className="p-4 font-mono font-medium text-slate-400 bg-white/[0.01]">
+                <tr key={row.key} className="hover:bg-slate-50/50">
+                  <td className="p-4 font-mono font-medium text-slate-500 bg-slate-50/40">
                     {row.label}
                   </td>
                   {compareData.map((event, idx) => (
-                    <td key={idx} className="p-4 text-slate-200">
+                    <td key={idx} className="p-4 text-slate-800">
                       {row.render(event)}
                     </td>
                   ))}
                 </tr>
               ))}
               <tr>
-                <td className="p-4 bg-white/[0.01]"></td>
+                <td className="p-4 bg-slate-50/40"></td>
                 {compareData.map((event) => (
                   <td key={event._id} className="p-4">
                     <Link to={`/events/${event._id}`}>
