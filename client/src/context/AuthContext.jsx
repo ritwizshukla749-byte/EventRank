@@ -13,9 +13,19 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = useCallback(async () => {
     try {
+      // Only fetch profile if token exists
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
       const data = await authApi.me();
       setUser(data.user);
     } catch {
+      // If token is invalid, clear it
+      localStorage.removeItem('authToken');
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -29,6 +39,12 @@ export function AuthProvider({ children }) {
   const login = async (credentials, redirectTo = null) => {
     try {
       const data = await authApi.login(credentials);
+      
+      // Store token in localStorage
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      
       setUser(data.user);
       
       // Navigate to redirect path or default to homepage
@@ -48,6 +64,12 @@ export function AuthProvider({ children }) {
   const register = async (userData, redirectTo = null) => {
     try {
       const data = await authApi.register(userData);
+      
+      // Store token in localStorage
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      
       setUser(data.user);
       
       // Navigate to redirect path or default to homepage
@@ -70,6 +92,8 @@ export function AuthProvider({ children }) {
     } catch (error) {
       showError(error.message || 'Logout failed');
     } finally {
+      // Clear token from localStorage
+      localStorage.removeItem('authToken');
       setUser(null);
       navigate('/');
     }

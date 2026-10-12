@@ -18,10 +18,16 @@ export async function apiClient(endpoint, options = {}) {
     ...(options.headers || {}),
   };
 
+  // Add Authorization header if token exists in localStorage
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     ...options,
     headers,
-    credentials: 'include',
+    credentials: 'include', // Still include for cookie fallback
   });
 
   const data = await response.json().catch(() => null);
