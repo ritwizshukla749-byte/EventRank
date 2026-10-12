@@ -43,6 +43,7 @@ export default {
       },
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
     },

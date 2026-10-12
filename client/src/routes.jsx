@@ -8,9 +8,11 @@ import { Compare } from './pages/events/Compare';
 import { Login, Register } from './pages/auth/AuthPages';
 import { MyProfile } from './pages/profile/MyProfile';
 import { MyRegistrations } from './pages/profile/MyRegistrations';
+import { MySavedEvents } from './pages/profile/MySavedEvents';
 import { SubmitReview } from './pages/reviews/SubmitReview';
 import { OrganizerDashboard } from './pages/organizer/OrganizerDashboard';
 import { CreateEvent } from './pages/organizer/CreateEvent';
+import { NotFound } from './pages/errors/NotFound';
 import { useAuth } from './context/AuthContext';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
@@ -71,6 +73,14 @@ export function AppRoutes() {
           }
         />
         <Route
+          path="/saved"
+          element={
+            <ProtectedRoute>
+              <MySavedEvents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/events/:id/review"
           element={
             <ProtectedRoute>
@@ -97,8 +107,8 @@ export function AppRoutes() {
           }
         />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/discover" replace />} />
+        {/* Fallback - 404 Not Found */}
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
